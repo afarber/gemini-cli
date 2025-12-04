@@ -87,6 +87,7 @@ export interface InputPromptProps {
   popAllMessages?: () => string | undefined;
   suggestionsPosition?: 'above' | 'below';
   setBannerVisible: (visible: boolean) => void;
+  isAlternateBuffer?: boolean;
 }
 
 // The input content, input container, and input suggestions list may have different widths
@@ -129,6 +130,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
   popAllMessages,
   suggestionsPosition = 'below',
   setBannerVisible,
+  isAlternateBuffer = false,
 }) => {
   const { stdout } = useStdout();
   const { merged: settings } = useSettings();
@@ -1046,16 +1048,21 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
     </Box>
   ) : null;
 
+  const borderColor =
+    isShellFocused && !isEmbeddedShellFocused
+      ? (statusColor ?? theme.border.focused)
+      : theme.border.default;
+
   return (
     <>
       {suggestionsPosition === 'above' && suggestionsNode}
       <Box
-        borderStyle="round"
-        borderColor={
-          isShellFocused && !isEmbeddedShellFocused
-            ? (statusColor ?? theme.border.focused)
-            : theme.border.default
-        }
+        borderStyle={isAlternateBuffer ? 'round' : 'single'}
+        borderTop={true}
+        borderBottom={true}
+        borderLeft={isAlternateBuffer}
+        borderRight={isAlternateBuffer}
+        borderColor={borderColor}
         paddingX={1}
         width={mainAreaWidth}
         flexDirection="row"
