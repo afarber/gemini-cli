@@ -5,6 +5,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { useStdout } from 'ink';
 import type {
   Config,
   EditorType,
@@ -88,10 +89,14 @@ function showCitations(settings: LoadedSettings): boolean {
 
 /**
  * Play terminal bell if setting is enabled and we're in an interactive terminal.
+ * Note: Uses Ink's stdout rather than process.stdout to bypass patchStdio().
  */
-function playTerminalBell(settings: LoadedSettings): void {
-  if (settings?.merged?.general?.terminalBell && process.stdout.isTTY) {
-    process.stdout.write('\x07');
+function playTerminalBell(
+  settings: LoadedSettings,
+  stdout: NodeJS.WriteStream,
+): void {
+  if (settings?.merged?.general?.terminalBell && stdout.isTTY) {
+    stdout.write('\x07');
   }
 }
 
@@ -133,6 +138,7 @@ export const useGeminiStream = (
   const { startNewPrompt, getPromptCount } = useSessionStats();
   const storage = config.storage;
   const logger = useLogger(storage);
+  const { stdout } = useStdout();
   const gitService = useMemo(() => {
     if (!config.getProjectRoot()) {
       return;
@@ -290,9 +296,9 @@ export const useGeminiStream = (
   // Play terminal bell when waiting for tool approval
   useEffect(() => {
     if (streamingState === StreamingState.WaitingForConfirmation) {
-      playTerminalBell(settings);
+      playTerminalBell(settings, stdout);
     }
-  }, [streamingState, settings]);
+  }, [streamingState, settings, stdout]);
 
   useEffect(() => {
     if (
@@ -1103,7 +1109,7 @@ export const useGeminiStream = (
             } finally {
               if (activeQueryIdRef.current === queryId) {
                 setIsResponding(false);
-                playTerminalBell(settings);
+                playTerminalBell(settings, stdout);
               }
             }
           });
@@ -1124,6 +1130,7 @@ export const useGeminiStream = (
       startNewPrompt,
       getPromptCount,
       settings,
+      stdout,
     ],
   );
 
