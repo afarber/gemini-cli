@@ -678,6 +678,7 @@ export interface ToolEditConfirmationDetails {
   newContent: string;
   isModifying?: boolean;
   ideConfirmation?: Promise<DiffUpdateResult>;
+  mayBeBlockedByHook?: boolean;
 }
 
 export interface ToolConfirmationPayload {
@@ -692,6 +693,7 @@ export interface ToolExecuteConfirmationDetails {
   onConfirm: (outcome: ToolConfirmationOutcome) => Promise<void>;
   command: string;
   rootCommand: string;
+  mayBeBlockedByHook?: boolean;
 }
 
 export interface ToolMcpConfirmationDetails {
@@ -701,6 +703,7 @@ export interface ToolMcpConfirmationDetails {
   toolName: string;
   toolDisplayName: string;
   onConfirm: (outcome: ToolConfirmationOutcome) => Promise<void>;
+  mayBeBlockedByHook?: boolean;
 }
 
 export interface ToolInfoConfirmationDetails {
@@ -709,6 +712,7 @@ export interface ToolInfoConfirmationDetails {
   onConfirm: (outcome: ToolConfirmationOutcome) => Promise<void>;
   prompt: string;
   urls?: string[];
+  mayBeBlockedByHook?: boolean;
 }
 
 export type ToolCallConfirmationDetails =

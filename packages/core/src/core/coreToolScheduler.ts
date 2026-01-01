@@ -62,6 +62,7 @@ import {
 } from '../scheduler/types.js';
 import { saveTruncatedContent } from '../utils/fileUtils.js';
 import { convertToFunctionResponse } from '../utils/generateContentResponseUtilities.js';
+import { HookEventName } from '../hooks/types.js';
 
 export type {
   ToolCall,
@@ -622,9 +623,34 @@ export class CoreToolScheduler {
                 }" requires user confirmation, which is not supported in non-interactive mode.`,
               );
             }
-            // Fire Notification hook before showing confirmation to user
+
+            // Check if any BeforeTool hook might match this tool
             const messageBus = this.config.getMessageBus();
             const hooksEnabled = this.config.getEnableHooks();
+            if (hooksEnabled) {
+              const hookRegistry = this.config.getHookSystem()?.getRegistry();
+              if (hookRegistry) {
+                const beforeToolHooks = hookRegistry.getHooksForEvent(
+                  HookEventName.BeforeTool,
+                );
+                const toolName = reqInfo.name;
+                const mayBeBlockedByHook = beforeToolHooks.some((entry) => {
+                  if (!entry.matcher) return true; // No matcher = matches all
+                  const matcher = entry.matcher.trim();
+                  if (matcher === '' || matcher === '*') return true;
+                  try {
+                    return new RegExp(matcher).test(toolName);
+                  } catch {
+                    return matcher === toolName;
+                  }
+                });
+                if (mayBeBlockedByHook) {
+                  confirmationDetails.mayBeBlockedByHook = true;
+                }
+              }
+            }
+
+            // Fire Notification hook before showing confirmation to user
             if (hooksEnabled && messageBus) {
               await fireToolNotificationHook(messageBus, confirmationDetails);
             }

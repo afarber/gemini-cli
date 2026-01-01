@@ -371,6 +371,15 @@ export const ToolConfirmationMessage: React.FC<
         {bodyContent}
       </Box>
 
+      {/* Hook Warning */}
+      {confirmationDetails.mayBeBlockedByHook && (
+        <Box marginBottom={1} flexShrink={0}>
+          <Text color={theme.status.warning}>
+            Note: A hook may modify or block this action after confirmation.
+          </Text>
+        </Box>
+      )}
+
       {/* Confirmation Question */}
       <Box marginBottom={1} flexShrink={0}>
         <Text color={theme.text.primary}>{question}</Text>
