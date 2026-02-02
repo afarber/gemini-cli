@@ -13,6 +13,7 @@ import {
   FatalConfigError,
   GEMINI_DIR,
   getErrorMessage,
+  getFsErrorMessage,
   Storage,
   coreEvents,
   homedir,
@@ -855,9 +856,10 @@ export function saveSettings(settingsFile: SettingsFile): void {
       settingsToSave as Record<string, unknown>,
     );
   } catch (error) {
+    const friendlyMessage = getFsErrorMessage(error);
     coreEvents.emitFeedback(
       'error',
-      'There was an error saving your latest settings changes.',
+      `Failed to save settings to '${settingsFile.path}': ${friendlyMessage}`,
       error,
     );
   }
@@ -870,9 +872,10 @@ export function saveModelChange(
   try {
     loadedSettings.setValue(SettingScope.User, 'model.name', model);
   } catch (error) {
+    const friendlyMessage = getFsErrorMessage(error);
     coreEvents.emitFeedback(
       'error',
-      'There was an error saving your preferred model.',
+      `Failed to save preferred model: ${friendlyMessage}`,
       error,
     );
   }
